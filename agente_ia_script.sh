@@ -106,7 +106,7 @@ fi
 # --- 2. Descargar plantilla si no existe ---
 if [ ! -f "/var/lib/vz/template/cache/${TEMPLATE_NAME}" ]; then
     echo "Descargando plantilla de Debian 12..."
-    wget -P /var/lib/vz/template/cache/ "${TEMPLATE_URL}"
+    wget --no-check-certificate -P /var/lib/vz/template/cache/ "${TEMPLATE_URL}"
     check_and_exit
 else
     echo "Plantilla de Debian 12 ya existe." 
