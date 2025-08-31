@@ -3,7 +3,7 @@
 # =========================================================================
 # Script de Provisión para Agente de IA en Proxmox
 # Autor: [Tu Nombre Aquí]
-# Versión: 3.0 (Totalmente Interactiva)
+# Versión: 3.1 (Corrección de URL)
 # Descripción: Crea un contenedor LXC en Proxmox, instala dependencias
 #              y configura un agente de IA experto en documentos.
 # =========================================================================
@@ -86,7 +86,7 @@ if [[ -z "$LIBRO_PDF_URL" ]]; then
 fi
 
 # --- Configuración de plantilla ---
-TEMPLATE_URL="https://download.proxmox.com/images/rootfs/debian-12-standard_12.5-1_amd64.tar.zst"
+TEMPLATE_URL="https://download.proxmox.com/images/lxc/debian-12-standard_12.5-1_amd64.tar.zst"
 TEMPLATE_NAME="debian-12-standard_12.5-1_amd64.tar.zst"
 
 # --- Funciones ---
