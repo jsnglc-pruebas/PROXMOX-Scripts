@@ -3,7 +3,7 @@
 # =========================================================================
 # Script de Provisión para Agente de IA en Proxmox
 # Autor: [Tu Nombre Aquí]
-# Versión: 2.0 (Interactiva)
+# Versión: 3.0 (Totalmente Interactiva)
 # Descripción: Crea un contenedor LXC en Proxmox, instala dependencias
 #              y configura un agente de IA experto en documentos.
 # =========================================================================
@@ -12,6 +12,7 @@
 echo "--- Configuración del Agente IA ---"
 echo "Este script te guiará para configurar el agente."
 
+# Solicitar la IP del host de Proxmox
 while true; do
     read -p "Ingresa la dirección IP de tu host de Proxmox (donde se ejecuta Ollama): " OLLAMA_HOST_IP
     if [[ -z "$OLLAMA_HOST_IP" ]]; then
@@ -21,25 +22,72 @@ while true; do
     fi
 done
 
-read -p "Ingresa la URL del archivo PDF que el agente usará (deja en blanco para usar el ejemplo de Don Quijote): " LIBRO_PDF_URL
+# Solicitar el ID del contenedor
+while true; do
+    read -p "Ingresa el ID del contenedor (por ejemplo, 103): " CONTAINER_ID
+    if [[ -z "$CONTAINER_ID" ]]; then
+        echo "El ID no puede estar vacío. Por favor, inténtalo de nuevo."
+    elif ! [[ "$CONTAINER_ID" =~ ^[0-9]+$ ]]; then
+        echo "El ID debe ser un número. Por favor, inténtalo de nuevo."
+    else
+        break
+    fi
+done
 
-# Si el usuario no proporciona una URL, usamos la de Don Quijote por defecto.
+# Solicitar el nombre de host del contenedor
+while true; do
+    read -p "Ingresa el nombre del host para el contenedor (por ejemplo, agente-ia): " CONTAINER_HOSTNAME
+    if [[ -z "$CONTAINER_HOSTNAME" ]]; then
+        echo "El nombre de host no puede estar vacío. Por favor, inténtalo de nuevo."
+    else
+        break
+    fi
+done
+
+# Solicitar la memoria RAM
+while true; do
+    read -p "Ingresa la memoria RAM en MB (por ejemplo, 4096): " CONTAINER_MEMORY
+    if [[ -z "$CONTAINER_MEMORY" ]]; then
+        echo "La memoria no puede estar vacía. Por favor, inténtalo de nuevo."
+    elif ! [[ "$CONTAINER_MEMORY" =~ ^[0-9]+$ ]]; then
+        echo "La memoria debe ser un número. Por favor, inténtalo de nuevo."
+    else
+        break
+    fi
+done
+
+# Solicitar el tamaño del disco
+while true; do
+    read -p "Ingresa el tamaño del disco en GB (por ejemplo, 10): " CONTAINER_DISK
+    if [[ -z "$CONTAINER_DISK" ]]; then
+        echo "El disco no puede estar vacío. Por favor, inténtalo de nuevo."
+    elif ! [[ "$CONTAINER_DISK" =~ ^[0-9]+$ ]]; then
+        echo "El disco debe ser un número. Por favor, inténtalo de nuevo."
+    else
+        break
+    fi
+done
+
+# Solicitar el puente de red
+while true; do
+    read -p "Ingresa el nombre del puente de red (por ejemplo, vmbr0): " BRIDGE_NETWORK
+    if [[ -z "$BRIDGE_NETWORK" ]]; then
+        echo "El puente de red no puede estar vacío. Por favor, inténtalo de nuevo."
+    else
+        break
+    fi
+done
+
+# Solicitar la URL del PDF
+read -p "Ingresa la URL del archivo PDF (deja en blanco para usar el ejemplo de Don Quijote): " LIBRO_PDF_URL
 if [[ -z "$LIBRO_PDF_URL" ]]; then
     LIBRO_PDF_URL="https://ia600903.us.archive.org/30/items/el-ingenioso-hidalgo-don-quijote-de-la-mancha-edicion-del-iv-centenario/El_ingenioso_hidalgo_don_Quijote_de_la_Mancha.pdf"
     echo "Usando el PDF de ejemplo: Don Quijote de la Mancha."
 fi
 
-# --- Configuración del contenedor LXC ---
-# ¡IMPORTANTE! Asegúrate de que este ID no esté en uso.
-CONTAINER_ID=103
-CONTAINER_HOSTNAME="agente-ia-repo"
-CONTAINER_MEMORY=4096  # 4GB de RAM
-CONTAINER_DISK=10      # 10GB de disco
-
-# --- Configuración de plantilla y red ---
+# --- Configuración de plantilla ---
 TEMPLATE_URL="https://download.proxmox.com/images/rootfs/debian-12-standard_12.5-1_amd64.tar.zst"
 TEMPLATE_NAME="debian-12-standard_12.5-1_amd64.tar.zst"
-BRIDGE_NETWORK="vmbr0" # Nombre de tu puente de red en Proxmox
 
 # --- Funciones ---
 check_and_exit() {
@@ -76,7 +124,7 @@ check_and_exit
 # --- 4. Poner en marcha el contenedor ---
 echo "Iniciando contenedor ${CONTAINER_ID}..."
 pct start ${CONTAINER_ID}
-sleep 15 # Esperamos a que el contenedor inicie completamente
+sleep 15
 
 # --- 5. Instalar dependencias dentro del contenedor ---
 echo "Instalando dependencias en el contenedor..."
@@ -90,7 +138,7 @@ pct exec ${CONTAINER_ID} -- bash -c "python3 -m venv /opt/agente-venv && source 
 check_and_exit
 
 # --- 7. Descargar el PDF de ejemplo dentro del contenedor ---
-echo "Descargando el PDF de ejemplo desde '${LIBRO_PDF_URL}'..."
+echo "Descargando el PDF desde '${LIBRO_PDF_URL}'..."
 pct exec ${CONTAINER_ID} -- bash -c "wget -O /opt/libro.pdf '${LIBRO_PDF_URL}'"
 check_and_exit
 
